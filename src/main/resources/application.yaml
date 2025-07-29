@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/movie_db
+    username: user
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jooq:
+    # 指定SQL方言
+    sql-dialect: POSTGRES
