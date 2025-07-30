@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/movies")
@@ -23,7 +24,7 @@ public class MovieController {
         return new ResponseEntity<>(savedMovie, HttpStatus.CREATED);
     }
 
-    // R - Read by ID
+    // R - Get by ID
     @GetMapping("/{id}")
     public ResponseEntity<Movie> getMovieById(@PathVariable Integer id) {
         return movieService.getMovieById(id)
@@ -31,10 +32,30 @@ public class MovieController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    // R - Query by year
+    // R - Get by year
     @GetMapping("/year/{year}")
     public ResponseEntity<List<Movie>> getMoviesByYear(@PathVariable Integer year) {
-        List<Movie> movies = movieService.findMoviesByYear(year);
+        List<Movie> movies = movieService.getMoviesByYear(year);
+        return new ResponseEntity<>(movies, HttpStatus.OK);
+    }
+
+    // R - Get by year in
+    @GetMapping("/year")
+    public ResponseEntity<List<Movie>> getMoviesByYearIn(@RequestParam Set<Integer> years) {
+        List<Movie> movies = movieService.getMoviesByYearIn(years);
+        return new ResponseEntity<>(movies, HttpStatus.OK);
+    }
+
+    // R - Get all by pagination
+    @GetMapping("/paged")
+    public ResponseEntity<List<Movie>> getAllMoviesPaged(
+            @RequestParam(defaultValue = "0") int page, // 默认页码从0开始
+            @RequestParam(defaultValue = "1") int size) { // 默认每页1条
+        List<Movie> movies = movieService.getAllMoviesPaged(page, size);
+        if (movies.isEmpty() && page > 0) {
+            // 如果查询到空页且不是第一页
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
         return new ResponseEntity<>(movies, HttpStatus.OK);
     }
 

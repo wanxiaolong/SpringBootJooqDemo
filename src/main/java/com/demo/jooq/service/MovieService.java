@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 // 导入jOOQ生成的Table类，方便引用表和字段
 import static com.demo.jooq.codegen.tables.Movies.MOVIES;
@@ -29,7 +30,7 @@ public class MovieService {
     public Movie createMovie(Movie movie) {
         MoviesRecord moviesRecord = dslContext.insertInto(MOVIES)
                 // 注意：jOOQ生成的字段名是列名的小写和下划线
-                .set(MOVIES.YEAR_RELEASED, movie.getYear())
+                .set(MOVIES.YEAR, movie.getYear())
                 .set(MOVIES.TITLE, movie.getTitle())
                 .set(MOVIES.DIRECTOR, movie.getDirector())
                 .set(MOVIES.GENRE, movie.getGenre())
@@ -59,10 +60,32 @@ public class MovieService {
     }
 
     // --- R: 查询电影 (按年份查询) ---
-    public List<Movie> findMoviesByYear(Integer year) {
+    public List<Movie> getMoviesByYear(Integer year) {
         return dslContext.selectFrom(MOVIES)
-                .where(MOVIES.YEAR_RELEASED.eq(year))
+                .where(MOVIES.YEAR.eq(year))
                 // 映射为Movie对象列表
+                .fetchInto(Movie.class);
+    }
+
+    // --- R: 按照年份查询(sql: in)
+    public List<Movie> getMoviesByYearIn(Set<Integer> years) {
+        return dslContext.selectFrom(MOVIES)
+                .where(MOVIES.YEAR.in(years))
+                .fetchInto(Movie.class);
+    }
+
+    // --- R: 分页查询所有电影 ---
+    public List<Movie> getAllMoviesPaged(int page, int size) {
+        // 计算 OFFSET
+        int offset = page * size;
+        System.out.println("Fetching movies - Page: " + page + ", Size: " + size + ", Offset: " + offset);
+        return dslContext.selectFrom(MOVIES)
+                // 重要：分页查询需要一个明确的排序顺序，否则结果不可预测
+                .orderBy(MOVIES.ID.asc())
+                // 限制每页返回的记录数
+                .limit(size)
+                // 从哪里开始返回记录
+                .offset(offset)
                 .fetchInto(Movie.class);
     }
 
@@ -76,7 +99,7 @@ public class MovieService {
     // --- U: Update (更新电影属性) ---
     public Optional<Movie> updateMovie(Integer id, Movie movieDetails) {
         int updatedRows = dslContext.update(MOVIES)
-                .set(MOVIES.YEAR_RELEASED, movieDetails.getYear())
+                .set(MOVIES.YEAR, movieDetails.getYear())
                 .set(MOVIES.TITLE, movieDetails.getTitle())
                 .set(MOVIES.DIRECTOR, movieDetails.getDirector())
                 .set(MOVIES.GENRE, movieDetails.getGenre())

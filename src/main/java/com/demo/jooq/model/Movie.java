@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 public class Movie {
 
     private Integer id;
-    // 对应数据库的 year_released 列
     private Integer year;
     private String title;
     private String director;
@@ -22,5 +21,4 @@ public class Movie {
     // jOOQ会根据字段名（或通过配置的映射策略）尝试将数据库列映射到这些字段。
     // 如果字段名与jOOQ生成的Record中的字段名不完全匹配，可能需要自定义转换器或别名。
     // 但对于简单的驼峰命名转换，jOOQ通常能自动处理。
-    // 例如，数据库的 `year_released` 列，在POJO中通常命名为 `year`。
 }
